@@ -67,7 +67,57 @@ struct Atom {
   }
 }
 
-Atom Func_Call ( Atom func, Atom[] args ) {
+alias FnType  = Function[string];
+alias VarType = Atom[string];
+
+class Environment {
+public:
+  FnType env;
+  VarType vars;
+  Environment outer_env;
+
+  this ( Atom[] parameters, Atom[] arguments, Environment outer_ ) {
+    import std.range;
+    foreach ( tup; zip(parameters, arguments) )
+      vars[Atom(tup[0].To_String)] = tup[1];
+    uter = outer_;
+  }
+
+  this ( ) {
+    outer = null;
+  }
+
+  Environment Search ( Atom val ) {
+    return Search ( val.To_String );
+  }
+
+  Environment Search ( string val ) {
+    if ( val in env ) return this;
+    if ( val in var ) return this;
+    assert(outer !is null, "Could not find: " ~ val);
+    return outer.Search(val);
+  }
+}
+
+class Function {
+  Atom[] parameters;
+  ParseTree func;
+  Environment env;
+
+  this ( Atom parameters_, Atom func_, Environment env_ ) {
+    parameters = parameters_.dup;
+    fn         = fn_;
+    env        = env_;
+  }
+
+  Atom Call ( Atom[] args ) {
+    // return Eval ( func, 
+  }
+}
+
+// (Atom[string])[] variable_stack;
+
+Atom Func_Call ( Atom func, Atom[] args, Environment env ) {
   import std.math;
 
   string Arith_Mix ( string mixer, int arguments = 2 ) {
@@ -91,6 +141,10 @@ Atom Func_Call ( Atom func, Atom[] args ) {
     case "car": return args[0].RList[0];
     case "cdr": return Atom(args[0].RList[1..$]);
     case "cons": return Atom(args[0] ~ args[1].RList);
+    case "set":
+      env.vars[args[0].RString] = args[1];
+    case "setg":
+      global_environment.vars[args[0].RString] = args[1];
     // --- DLang mathematics ---
     case "+":    mixin(Arith_Mix(`return Atom(%s + %s);`));
     case "-":    mixin(Arith_Mix(`return Atom(%s - %s);`));
@@ -168,21 +222,25 @@ Atom RVariable ( string var ) {
 }
 
 Atom List_Eval ( ParseTree[] tree ) {
-  import std.algorithm, std.array;
+  auto List_Eval_Helper ( ParseTree elem ) {
+    import std.algorithm, std.array;
+    switch ( elem.name ) {
+      default:         return Atom(elem.matches.joiner.array.to!string);
+      case "AOQ.Atom": return List_Eval_Helper(elem.children[0]);
+      case "AOQ.List": return List_Eval(elem.children);
+    }
+  }
+
   Atom[] list;
   foreach ( elem; tree ) {
-    switch ( elem.name ) {
-      default:
-        list ~= Atom(elem.matches.joiner.array.to!string);
-        break;
-      case "AOQ.List":
-        list ~= List_Eval(elem.children);
-    }
+    list ~= List_Eval_Helper(elem);
   }
   return Atom(list);
 }
 
-Atom Eval ( ParseTree atom ) {
+Environment global_environment;
+
+Atom Eval ( ParseTree atom, Environment environment = global_environment ) {
   import std.algorithm, std.array, std.conv : to;
   switch ( atom.name ) {
     default:
@@ -198,7 +256,7 @@ Atom Eval ( ParseTree atom ) {
     case "AOQ.List":
       return List_Eval(atom.children);
     case "AOQ.Variable":
-      return RVariable(atom.matches[0..$].joiner.array.to!string);
+      return environment.Search(RVariable(atom.matches[0..$].joiner.array.to!string));
     case "AOQ.Operator":
       return Atom(atom.matches[0]);
     case "AOQ.IntegerL":
@@ -232,6 +290,7 @@ float Float_Cmp ( float a, float b, float c ) {
 
 void main() {
   import std.conv;
+  global_environment = new Environment();
   // --- integer/flots
   assert("(+ 1 2)".Eval == "3");
   assert("(+ 1.5f 2.0f)".Eval == "3.5");
@@ -262,4 +321,7 @@ void main() {
   assert("(car (cdr '(rose 1.3f asdf)))".Eval == "1.3f");
   assert("(car (cons asdf [rose 1.3f]))".Eval == "asdf");
   assert("(car (car (cdr [a [b c d] e f])))".Eval == "b");
+  // --- custom variables
+  assert("(set A-Thing 20) (+ A-Thing 40)".Eval == 60);
+  // --- custom functions
 }
