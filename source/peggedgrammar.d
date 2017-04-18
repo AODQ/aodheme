@@ -15,7 +15,7 @@ mixin(grammar(`
     FloatL <- IntegerL "." Integer "f"
     List < ("~(" ListElement* ")") / ("[" ListElement* "]")
     UnparsedElement < "~" ListElement
-    Lambda < "(" "lambda" "(" LambdaArgs+ ")" Loop ")"
+    Lambda < "(" "lambda" "(" LambdaArgs+ ")" "{" Loop "}" ")"
     LambdaArgs < Variable
 
     ListElement < (Atom / SExpr / List)

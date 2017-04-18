@@ -50,8 +50,37 @@ void main() {
   }.Eval == "0");
   // --- custom functions
   assert(q{
-    (set ~A (lambda (x y) ((+ x y) (- x y))))
+    (set ~A (lambda (x y) (
+      ((+ x y) (- x y))
+    )))
     (A -1 1)
-    (+ -1 1)
   }.Eval == "0");
+  assert(q{
+    (if (> 2.0f 5.0f)
+        ~asdf
+        (((+ 5 5))))
+  }.Eval == "10");
+  assert(q{
+    (set ~A (lambda (x) {(+ x x)}))
+    (+ 10 50)
+    (set ~B (lambda (x) {(+ x x)}))
+    (A (B 5))
+    (A (A (B (A (B 5) 5) 5) 5) 5)
+  }.Eval == "160");
+  assert(q{
+    (set ~B (lambda (x) {((pow x x))}))
+    (B 2)
+  }.Eval == "4");
+  assert(q{
+    (set ~A (lambda (x) {
+      (set ~B (lambda (x) {
+        (set ~C (lambda (x y) {
+          (pow x y)
+        }))
+        (C (+ 10 x) (- 10 x))
+      }))
+      (B (+ x 3))
+    }))
+    (A 2)
+  }.Eval == "759375");
 }

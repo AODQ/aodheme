@@ -35,16 +35,32 @@ private Atom List_Eval ( ParseTree[] tree ) {
 
 
 
+int tab;
+
+string TTab ( ) {
+  string t = "";
+  foreach ( i; 0 .. tab ) t ~= "  ";
+  return t;
+}
 Atom Eval_Tree ( ParseTree atom, Environment environment = global_environment) {
   import std.algorithm, std.array, std.conv : to;
   switch ( atom.name ) {
     default:
       assert(false, "Unknown atom name: `" ~ atom.name ~ "`");
-    case "AOQ": case "AOQ.Loop":
+    case "AOQ": case "AOQ.Loop": case "AOQ.LoopNoParen":
       Atom result;
-      foreach ( ref a_child; atom.children ) {
-        result = a_child.Eval_Tree(environment);
+      writeln(TTab ~ "===>");
+      ++ tab;
+      foreach ( i; atom.children ) {
+        writeln(TTab, "CHILD: ", i.name);
       }
+      foreach ( ref a_child; atom.children ) {
+        writeln(TTab ~ "LOOP: ", a_child.matches.joiner);
+        result = a_child.Eval_Tree(environment);
+        writeln(TTab, "LOOP RES: ", result);
+      }
+      -- tab;
+      writeln(TTab ~ "<=== ", result);
       return result;
     case "AOQ.Atom":
       return Eval_Tree(atom.children[0], environment);
@@ -68,18 +84,19 @@ Atom Eval_Tree ( ParseTree atom, Environment environment = global_environment) {
                         .map!(n => Eval_Tree(n, environment))
                         .array;
       auto   func = new Function(args, atom.children[$-1]);
+      writeln(TTab, " LAMBDA!");
       return Atom(func);
     case "AOQ.SExpr":
       auto func = atom.children[0].Eval_Tree(environment);
       auto args = atom.children[1 .. $]
                       .map!(n => Eval_Tree(n, environment))
                       .array;
-      writeln(func, " ", args);
       import functions;
+      writeln(TTab, "FN: ", atom.children[0].matches.joiner);
       auto res = func.RType == typeid(Function) ?
                       Func_Call(func, args, environment) :
                       func;
-      writeln("    ==> ", res);
+      writeln(TTab, "RES: ", res);
       return res;
   }
 }

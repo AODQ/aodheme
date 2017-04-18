@@ -110,30 +110,34 @@ auto Construct_Default_Environment ( )() {
     "tanh", `tanh(%s)`, "tan", `tan(%s)`, "truncate", `trunc(%s)`
   ));
 
-  t_env.vars["car"] = Atom(new Fn((Atom[] args, Environment env) {
-    return args[0].RList[0];
-  }));
-  t_env.vars["cdr"] = Atom(new Fn((Atom[] args, Environment env) {
-    return Atom(args[0].RList[1..$]);
-  }));
-  t_env.vars["cons"] = Atom(new Fn((Atom[] args, Environment env) {
-    return Atom(args[0] ~ args[1].RList);
-  }));
-  t_env.vars["set"] = Atom(new Fn((Atom[] args, Environment env) {
-    return Atom(args[0] ~ args[1].RList);
-  }));
-  t_env.vars["cons"] = Atom(new Fn((Atom[] args, Environment env) {
-    return Atom(args[0] ~ args[1].RList);
-  }));
-  t_env.vars["set"] = Atom(new Fn((Atom[] args, Environment env) {
-    env.vars[args[0].RString] = args[1];
-    return args[1];
-  }));
-  t_env.vars["setg"] = Atom(new Fn((Atom[] args, Environment env) {
-    global_environment.vars[args[0].RString] = args[1];
-    return args[1];
-  }));
+  void Add_Fn(string name, Atom delegate(Atom[], Environment) deleg) {
+    t_env.vars[name] = Atom(new Fn(deleg));
+  }
 
+  Add_Fn("car", (Atom[] args, Environment env) {return args[0].RList[0];});
+  Add_Fn("cdr", (Atom[] args, Environment env) {return Atom(args[0].RList[1..$]);});
+  Add_Fn("cons", (Atom[] args, Environment env) {return Atom(args[0] ~ args[1].RList);});
+  Add_Fn("set", (Atom[] args, Environment env) {
+    env.vars[args[0].RString] = args[1];
+    return args[0];
+  });
+  Add_Fn("setg", (Atom[] args, Environment env) {
+    global_environment.vars[args[0].RString] = args[1];
+    return Atom("");
+  });
+  Add_Fn("if", (Atom[] args, Environment env) {
+    return args[0].To_String == "1" ? args[1] : args[2];
+  });
+  Add_Fn ("writeln", (Atom[] args, Environment env) {
+    import std.stdio : writeln;
+    writeln(args.map!(n => n.To_String));
+    return Atom("");
+  });
+  Add_Fn ("==", (Atom[] args, Environment env) {return Atom(args[0].To_String == args[1].To_String);});
+  Add_Fn ("<",  (Atom[] args, Environment env) {mixin (Arithmetic_Mix (q{%s < %s}));});
+  Add_Fn (">",  (Atom[] args, Environment env) {mixin (Arithmetic_Mix (q{%s > %s}));});
+  Add_Fn ("<=", (Atom[] args, Environment env) {mixin (Arithmetic_Mix (q{%s <= %s}));});
+  Add_Fn (">=", (Atom[] args, Environment env) {mixin (Arithmetic_Mix (q{%s >= %s}));});
   return t_env;
 }
 
