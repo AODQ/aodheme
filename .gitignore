@@ -3,5 +3,5 @@ docs.json
 __dummy.html
 *.o
 *.obj
-aodheme
+libaodheme.a
 __TEST_LIBRARY__

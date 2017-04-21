@@ -1,9 +1,16 @@
 module interpreter;
 import globals, atom, environment, pegged.grammar : ParseTree;
 
+void Initialize ( ) {
+  global_environment = Construct_Default_Environment!();
+}
+
+auto Evaluate ( string expression ) {
+  import peggedgrammar;
+  return AOQ(expression);
+}
 
 string Eval ( string str_expression ) {
-  global_environment = Construct_Default_Environment!();
   import peggedgrammar;
   auto expression = AOQ(str_expression);
   writeln("EXPR: ", expression);

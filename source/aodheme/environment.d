@@ -114,9 +114,15 @@ auto Construct_Default_Environment ( )() {
     t_env.vars[name] = Atom(new Fn(deleg));
   }
 
-  Add_Fn("car", (Atom[] args, Environment env) {return args[0].RList[0];});
-  Add_Fn("cdr", (Atom[] args, Environment env) {return Atom(args[0].RList[1..$]);});
-  Add_Fn("cons", (Atom[] args, Environment env) {return Atom(args[0] ~ args[1].RList);});
+  Add_Fn("car", (Atom[] args, Environment env) {
+    return args[0].RList[0];
+  });
+  Add_Fn("cdr", (Atom[] args, Environment env) {
+    return Atom(args[0].RList[1..$]);
+  });
+  Add_Fn("cons", (Atom[] args, Environment env) {
+    return Atom(args[0] ~ args[1].RList);
+  });
   Add_Fn("set", (Atom[] args, Environment env) {
     env.vars[args[0].RString] = args[1];
     return args[0];
@@ -128,16 +134,55 @@ auto Construct_Default_Environment ( )() {
   Add_Fn("if", (Atom[] args, Environment env) {
     return args[0].To_String == "1" ? args[1] : args[2];
   });
+  Add_Fn("empty", (Atom[] args, Environment env) {
+    import std.stdio;
+    writeln(args[0]);
+    return args[0].RList.empty ? Atom(true) : Atom(false);
+  });
   Add_Fn ("writeln", (Atom[] args, Environment env) {
     import std.stdio : writeln;
     writeln(args.map!(n => n.To_String));
     return Atom("");
   });
-  Add_Fn ("==", (Atom[] args, Environment env) {return Atom(args[0].To_String == args[1].To_String);});
-  Add_Fn ("<",  (Atom[] args, Environment env) {mixin (Arithmetic_Mix (q{%s < %s}));});
-  Add_Fn (">",  (Atom[] args, Environment env) {mixin (Arithmetic_Mix (q{%s > %s}));});
-  Add_Fn ("<=", (Atom[] args, Environment env) {mixin (Arithmetic_Mix (q{%s <= %s}));});
-  Add_Fn (">=", (Atom[] args, Environment env) {mixin (Arithmetic_Mix (q{%s >= %s}));});
+  Add_Fn ("==", (Atom[] args, Environment env) {
+    return Atom(args[0].To_String == args[1].To_String);
+  });
+  Add_Fn ("<",  (Atom[] args, Environment env) {
+    mixin (Arithmetic_Mix (q{%s < %s}));});
+  Add_Fn (">",  (Atom[] args, Environment env) {
+    mixin (Arithmetic_Mix (q{%s > %s}));
+  });
+  Add_Fn ("<=", (Atom[] args, Environment env) {
+    mixin (Arithmetic_Mix (q{%s <= %s}));});
+  Add_Fn (">=", (Atom[] args, Environment env) {
+    mixin (Arithmetic_Mix (q{%s >= %s}));
+  });
+  //         mapfn size  dim  aa   filename
+  // Voxelize ~Map 1.0f 32.0f 1.0f "out.txt"
+  Add_Fn ("Voxelize", (Atom[] args, Environment env) {
+    import std.file;
+    import globals;
+
+    auto map_func_symbol = env.Search(args[0]);
+    writeln("SYMBOL: ", map_func_symbol);
+    float pt_size = 1.0f, dimensions = 32.0f;
+    bool antialiasing;
+    string filename = "stdout";
+
+    {
+      auto pt_size_ptr      = args.RElem_In_Bounds(1),
+           dimensions_ptr   = args.RElem_In_Bounds(2),
+           filename_ptr     = args.RElem_In_Bounds(3),
+           antialiasing_ptr = args.RElem_In_Bounds(4);
+      if ( pt_size_ptr      ) pt_size    = pt_size_ptr.RFloat;
+      if ( dimensions_ptr   ) dimensions = dimensions_ptr.RFloat;
+      if ( filename_ptr     ) filename   = filename_ptr.RString;
+      if ( antialiasing_ptr ) antialiasing = cast(bool)antialiasing_ptr.RInt;
+    }
+
+    return Func_Call ( map_func_symbol, [
+                Atom([Atom(1.0f), Atom(2.0f),Atom(3.0f)])], env );
+  });
   return t_env;
 }
 
