@@ -1,17 +1,19 @@
-module interpreter;
-import globals, atom, environment, pegged.grammar : ParseTree;
+module aodheme.interpreter;
+import aodheme.atom, aodheme.environment,
+       pegged.grammar : ParseTree;
+import std.stdio : writeln;
 
 void Initialize ( ) {
   global_environment = Construct_Default_Environment!();
 }
 
 auto Evaluate ( string expression ) {
-  import peggedgrammar;
+  import aodheme.peggedgrammar;
   return AOQ(expression);
 }
 
 string Eval ( string str_expression ) {
-  import peggedgrammar;
+  import aodheme.peggedgrammar;
   auto expression = AOQ(str_expression);
   writeln("EXPR: ", expression);
   auto res = expression.Eval_Tree.To_String;
@@ -86,7 +88,7 @@ Atom Eval_Tree ( ParseTree atom, Environment environment = global_environment) {
       if ( m[$-1] == "f" ) m = m[0 .. $-1];
       return Atom(m.joiner.array.to!float);
     case "AOQ.Lambda":
-      import functions;
+      import aodheme.functions;
       Atom[] args = atom.children[0..$-1]
                         .map!(n => Eval_Tree(n, environment))
                         .array;
@@ -98,7 +100,7 @@ Atom Eval_Tree ( ParseTree atom, Environment environment = global_environment) {
       auto args = atom.children[1 .. $]
                       .map!(n => Eval_Tree(n, environment))
                       .array;
-      import functions;
+      import aodheme.functions;
       writeln(TTab, "FN: ", atom.children[0].matches.joiner);
       auto res = func.RType == typeid(Function) ?
                       Func_Call(func, args, environment) :

@@ -1,5 +1,5 @@
-module environment;
-import atom, functions;
+module aodheme.environment;
+import aodheme.atom, aodheme.functions;
 
 Environment global_environment;
 
@@ -159,30 +159,29 @@ auto Construct_Default_Environment ( )() {
   });
   //         mapfn size  dim  aa   filename
   // Voxelize ~Map 1.0f 32.0f 1.0f "out.txt"
-  Add_Fn ("Voxelize", (Atom[] args, Environment env) {
-    import std.file;
-    import globals;
+  // Add_Fn ("Voxelize", (Atom[] args, Environment env) {
+  //   import std.file;
 
-    auto map_func_symbol = env.Search(args[0]);
-    writeln("SYMBOL: ", map_func_symbol);
-    float pt_size = 1.0f, dimensions = 32.0f;
-    bool antialiasing;
-    string filename = "stdout";
+  //   auto map_func_symbol = env.Search(args[0]);
+  //   writeln("SYMBOL: ", map_func_symbol);
+  //   float pt_size = 1.0f, dimensions = 32.0f;
+  //   bool antialiasing;
+  //   string filename = "stdout";
 
-    {
-      auto pt_size_ptr      = args.RElem_In_Bounds(1),
-           dimensions_ptr   = args.RElem_In_Bounds(2),
-           filename_ptr     = args.RElem_In_Bounds(3),
-           antialiasing_ptr = args.RElem_In_Bounds(4);
-      if ( pt_size_ptr      ) pt_size    = pt_size_ptr.RFloat;
-      if ( dimensions_ptr   ) dimensions = dimensions_ptr.RFloat;
-      if ( filename_ptr     ) filename   = filename_ptr.RString;
-      if ( antialiasing_ptr ) antialiasing = cast(bool)antialiasing_ptr.RInt;
-    }
+  //   {
+  //     auto pt_size_ptr      = args.RElem_In_Bounds(1),
+  //          dimensions_ptr   = args.RElem_In_Bounds(2),
+  //          filename_ptr     = args.RElem_In_Bounds(3),
+  //          antialiasing_ptr = args.RElem_In_Bounds(4);
+  //     if ( pt_size_ptr      ) pt_size    = pt_size_ptr.RFloat;
+  //     if ( dimensions_ptr   ) dimensions = dimensions_ptr.RFloat;
+  //     if ( filename_ptr     ) filename   = filename_ptr.RString;
+  //     if ( antialiasing_ptr ) antialiasing = cast(bool)antialiasing_ptr.RInt;
+  //   }
 
-    return Func_Call ( map_func_symbol, [
-                Atom([Atom(1.0f), Atom(2.0f),Atom(3.0f)])], env );
-  });
+  //   return Func_Call ( map_func_symbol, [
+  //               Atom([Atom(1.0f), Atom(2.0f),Atom(3.0f)])], env );
+  // });
   return t_env;
 }
 

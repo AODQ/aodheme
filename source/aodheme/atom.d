@@ -1,5 +1,5 @@
-module atom;
-import functions;
+module aodheme.atom;
+import aodheme.functions;
 
 string Atom_Variant_Func_Gen ( string name ) {
   import std.format, std.conv, std.string : toUpper;

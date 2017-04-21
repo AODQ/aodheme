@@ -1,4 +1,4 @@
-module peggedgrammar;
+module aodheme.peggedgrammar;
 import pegged.grammar;
 
 mixin(grammar(`

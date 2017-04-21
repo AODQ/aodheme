@@ -1,5 +1,6 @@
 module aodheme;
-public import interpreter : Initialize, Evaluate;
+public import aodheme.interpreter : Initialize, Evaluate;
+public import pegged.grammar : ParseTree;
 import std.stdio;
 
 unittest {
